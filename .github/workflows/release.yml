@@ -153,6 +153,7 @@ jobs:
           - label: whatsmeow
             image: chatbotx-whatsmeow
             dockerfile: ./apps/whatsmeow-bridge/Dockerfile
+            context: ./apps/whatsmeow-bridge
             runner: ubuntu-latest
     # Baseline builder leg was ~16 min and the others ~1-2 min. Bounds a hung
     # build, and an unprovisioned `runner` label, against the 24-hour default.
@@ -217,7 +218,7 @@ jobs:
         if: github.ref_name == 'main'
         uses: docker/build-push-action@v7
         with:
-          context: .
+          context: ${{ matrix.context || '.' }}
           file: ${{ matrix.dockerfile }}
           push: true
           tags: |
@@ -246,7 +247,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: docker/build-push-action@v7
         with:
-          context: .
+          context: ${{ matrix.context || '.' }}
           file: ${{ matrix.dockerfile }}
           push: true
           tags: |

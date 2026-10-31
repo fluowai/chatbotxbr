@@ -21,9 +21,8 @@ name: CI
 
 on:
   pull_request:
-  push:
-    branches: [main]
   workflow_call:
+  workflow_dispatch:
 
 # Read-only: these jobs only check out, install, and run local scripts —
 # none of them need to write contents, packages, or PR/issue state.
