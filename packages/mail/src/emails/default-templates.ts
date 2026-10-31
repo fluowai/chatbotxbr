@@ -16,28 +16,28 @@ function buildDefaultMjml(subject: string, bodyMjml: string): string {
   )
 }
 
-export const DEFAULT_SIGNUP_SUBJECT = "Verify your email address"
+export const DEFAULT_SIGNUP_SUBJECT = "Verifique seu endereço de e-mail"
 
 export const SIGNUP_BODY_MJML = `<mj-section padding="0 0 16px 0">
       <mj-column>
-        <mj-text padding="0 0 8px 0">Hi {{userName}},</mj-text>
+        <mj-text padding="0 0 8px 0">Olá {{userName}},</mj-text>
         <mj-text padding="0">
-          Thanks for signing up! Please verify your email address by clicking the button below.
+          Obrigado por se cadastrar! Por favor, confirme seu endereço de e-mail clicando no botão abaixo.
         </mj-text>
       </mj-column>
     </mj-section>
     <mj-section padding="0 0 16px 0">
       <mj-column>
-        <mj-button href="{{verificationUrl}}" align="left">Verify Email Address</mj-button>
+        <mj-button href="{{verificationUrl}}" align="left">Confirmar E-mail</mj-button>
         <mj-text padding="8px 0 0 0" font-size="13px" color="#888888">
-          Or use this link: <a href="{{verificationUrl}}" style="color:#3b82f6">{{verificationUrl}}</a>
+          Ou utilize este link: <a href="{{verificationUrl}}" style="color:#3b82f6">{{verificationUrl}}</a>
         </mj-text>
       </mj-column>
     </mj-section>
     <mj-section padding="0 0 16px 0">
       <mj-column>
         <mj-text padding="0" font-size="14px" color="#888888">
-          This link will expire in 24 hours. If you didn't create an account, you can ignore this email.
+          Este link expira em 24 horas. Se você não criou esta conta, pode ignorar este e-mail com segurança.
         </mj-text>
       </mj-column>
     </mj-section>`
@@ -47,30 +47,30 @@ export const DEFAULT_SIGNUP_TEMPLATE = buildDefaultMjml(
   SIGNUP_BODY_MJML,
 )
 
-export const DEFAULT_FORGOT_PASSWORD_SUBJECT = "Reset your password"
+export const DEFAULT_FORGOT_PASSWORD_SUBJECT = "Redefina sua senha"
 
 export const FORGOT_PASSWORD_BODY_MJML = `<mj-section padding="0 0 16px 0">
       <mj-column>
-        <mj-text padding="0 0 8px 0">Hi {{userName}},</mj-text>
+        <mj-text padding="0 0 8px 0">Olá {{userName}},</mj-text>
         <mj-text padding="0">
-          We received a request to reset the password for your account.
-          Click the button below to set a new password.
+          Recebemos uma solicitação para redefinir a senha da sua conta.
+          Clique no botão abaixo para definir uma nova senha.
         </mj-text>
       </mj-column>
     </mj-section>
     <mj-section padding="0 0 16px 0">
       <mj-column>
-        <mj-button href="{{resetPasswordUrl}}" align="left">Reset Password</mj-button>
+        <mj-button href="{{resetPasswordUrl}}" align="left">Redefinir Senha</mj-button>
         <mj-text padding="8px 0 0 0" font-size="13px" color="#888888">
-          Or use this link: <a href="{{resetPasswordUrl}}" style="color:#3b82f6">{{resetPasswordUrl}}</a>
+          Ou utilize este link: <a href="{{resetPasswordUrl}}" style="color:#3b82f6">{{resetPasswordUrl}}</a>
         </mj-text>
       </mj-column>
     </mj-section>
     <mj-section padding="0 0 16px 0">
       <mj-column>
         <mj-text padding="0" font-size="14px" color="#888888">
-          This link will expire in 1 hour. If you didn't request a password reset,
-          you can safely ignore this email — your password won't be changed.
+          Este link expira em 1 hora. Se você não solicitou a redefinição de senha,
+          pode ignorar este e-mail com segurança — sua senha permanecerá a mesma.
         </mj-text>
       </mj-column>
     </mj-section>`
@@ -80,29 +80,29 @@ export const DEFAULT_FORGOT_PASSWORD_TEMPLATE = buildDefaultMjml(
   FORGOT_PASSWORD_BODY_MJML,
 )
 
-export const DEFAULT_MAGIC_LINK_SUBJECT = "Sign in to {{brandName}}"
+export const DEFAULT_MAGIC_LINK_SUBJECT = "Entrar em {{brandName}}"
 
 export const MAGIC_LINK_BODY_MJML = `<mj-section padding="0 0 16px 0">
       <mj-column>
-        <mj-text padding="0 0 8px 0">Hi {{userName}},</mj-text>
+        <mj-text padding="0 0 8px 0">Olá {{userName}},</mj-text>
         <mj-text padding="0">
-          Click the button below to securely sign in to your {{brandName}} account.
-          This link will expire in 15 minutes and can only be used once.
+          Clique no botão abaixo para acessar sua conta em {{brandName}} com segurança.
+          Este link expira em 15 minutos e só pode ser utilizado uma vez.
         </mj-text>
       </mj-column>
     </mj-section>
     <mj-section padding="0 0 16px 0">
       <mj-column>
-        <mj-button href="{{magicUrl}}" align="left">Sign in to {{brandName}}</mj-button>
+        <mj-button href="{{magicUrl}}" align="left">Entrar em {{brandName}}</mj-button>
         <mj-text padding="8px 0 0 0" font-size="13px" color="#888888">
-          Or use this link: <a href="{{magicUrl}}" style="color:#3b82f6">{{magicUrl}}</a>
+          Ou utilize este link: <a href="{{magicUrl}}" style="color:#3b82f6">{{magicUrl}}</a>
         </mj-text>
       </mj-column>
     </mj-section>
     <mj-section padding="0 0 16px 0">
       <mj-column>
         <mj-text padding="0" font-size="14px" color="#888888">
-          If you didn't request this, you can safely ignore this email.
+          Se você não solicitou este acesso, pode ignorar este e-mail com segurança.
         </mj-text>
       </mj-column>
     </mj-section>`

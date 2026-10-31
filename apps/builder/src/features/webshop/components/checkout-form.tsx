@@ -27,6 +27,7 @@ import {
   CreditCardIcon,
   Loader2Icon,
   type LucideIcon,
+  QrCodeIcon,
   StoreIcon,
   TruckIcon,
   UserRoundIcon,
@@ -108,6 +109,7 @@ const PAYMENT_ICON: Record<PaymentMethod, LucideIcon> = {
   cod: BanknoteIcon,
   stripe: CreditCardIcon,
   paypal: WalletIcon,
+  pix: QrCodeIcon,
 }
 
 /** Taller, rounder fields, easier to tap in a phone's in-app browser. */

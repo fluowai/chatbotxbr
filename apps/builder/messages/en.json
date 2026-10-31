@@ -7976,7 +7976,8 @@
     "paymentMethods": {
       "cod": "Cash on Delivery",
       "stripe": "Card (Stripe)",
-      "paypal": "PayPal"
+      "paypal": "PayPal",
+      "pix": "PIX"
     },
     "shippingTypes": {
       "delivery": "Deliver to the customer",
@@ -9891,7 +9892,8 @@
         "options": {
           "cod": "Cash on Delivery",
           "stripe": "Card (Stripe)",
-          "paypal": "PayPal"
+          "paypal": "PayPal",
+          "pix": "PIX"
         },
         "connectHint": "To offer {provider}, connect it in <link>Settings → Integrations</link>."
       },
@@ -10114,6 +10116,7 @@
       "cod": "Cash on delivery",
       "stripe": "Card",
       "paypal": "PayPal",
+      "pix": "PIX (Instant approval)",
       "paid": "Paid",
       "refunded": "Refunded",
       "awaiting": "Waiting for your payment",
@@ -10796,5 +10799,52 @@
     "approve": "Approve",
     "deny": "Deny",
     "failed": "Authorization could not be completed. Please try again."
+  },
+  "manageSidebar": {
+    "communityGroup": "Community",
+    "enterpriseGroup": "Enterprise",
+    "platformGroup": "Platform",
+    "toolsGroup": "Tools",
+    "saasGroup": "SaaS",
+    "portalUsers": "Sub-accounts",
+    "portalWorkspaces": "Workspaces",
+    "portalPlans": "Plans",
+    "portalTopUpPacks": "Top-up Packs",
+    "portalUsage": "Usage",
+    "portalCustomDomain": "Custom Domain",
+    "portalPaymentProcessor": "Payment Processor",
+    "portalSmtp": "SMTP Settings",
+    "portalPricingPage": "Pricing Page"
+  },
+  "infoproducts": {
+    "title": "Infoproduct Integrations",
+    "description": "Automatic 1-click connectors for Kiwify, Hotmart, Eduzz, Monetizze, Braip and Ticto.",
+    "events": {
+      "compra_aprovada": "Purchase Approved",
+      "pix_gerado": "PIX Generated",
+      "aguardando_pagamento": "Waiting Payment",
+      "carrinho_abandonado": "Abandoned Cart",
+      "reembolsado": "Refunded",
+      "estorno": "Chargeback",
+      "cancelado": "Canceled"
+    }
+  },
+  "whatsmeow": {
+    "title": "WhatsApp Direct Connection (QR Code)",
+    "description": "Connect any WhatsApp number in seconds by scanning QR Code, without Meta message fees.",
+    "scanQr": "Scan QR Code",
+    "status": {
+      "connected": "Connected",
+      "connecting": "Connecting...",
+      "qr_ready": "Waiting for QR Code scan",
+      "disconnected": "Disconnected"
+    }
+  },
+  "tiers": {
+    "starter": "Starter",
+    "pro": "Pro",
+    "scale": "Scale",
+    "agency": "White-Label Agency",
+    "enterprise": "Unlimited Enterprise"
   }
 }

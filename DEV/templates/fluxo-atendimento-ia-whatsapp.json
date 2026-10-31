@@ -1,0 +1,183 @@
+{
+  "formatVersion": 2,
+  "exportedAt": "2026-10-29T12:00:00.000Z",
+  "source": {
+    "workspaceId": "1",
+    "flowId": "101",
+    "appVersion": "1.0.0"
+  },
+  "flows": [
+    {
+      "name": "[BR] Atendimento e Triagem com IA - WhatsApp",
+      "active": true,
+      "enableInInbox": true,
+      "startNodeId": "10",
+      "nodes": [
+        {
+          "id": "10",
+          "type": "sendMessage",
+          "position": { "x": 100, "y": 100 },
+          "measured": { "width": 320, "height": 220 },
+          "data": {
+            "name": "Boas-vindas e Menu",
+            "isStartNode": true,
+            "details": {
+              "beforeStep": {
+                "id": "101",
+                "stepType": "chooseChannel",
+                "channel": "omnichannel"
+              },
+              "steps": [
+                {
+                  "id": "102",
+                  "stepType": "sendText",
+                  "text": "Olá {{first_name}}! 👋\n\nSeja muito bem-vindo(a) ao nosso canal oficial de atendimento no WhatsApp.\n\nSou seu assistente virtual inteligente. Como posso te ajudar hoje?",
+                  "buttons": [
+                    {
+                      "id": "111",
+                      "label": "Tirar Dúvidas com IA",
+                      "buttonType": "sendMessage",
+                      "beforeStep": {
+                        "id": "112",
+                        "stepType": "startAnotherNode"
+                      },
+                      "steps": []
+                    },
+                    {
+                      "id": "121",
+                      "label": "Ver Catálogo / Loja",
+                      "buttonType": "sendMessage",
+                      "beforeStep": {
+                        "id": "122",
+                        "stepType": "startAnotherNode"
+                      },
+                      "steps": []
+                    },
+                    {
+                      "id": "131",
+                      "label": "Falar com Humano",
+                      "buttonType": "sendMessage",
+                      "beforeStep": {
+                        "id": "132",
+                        "stepType": "startAnotherNode"
+                      },
+                      "steps": []
+                    }
+                  ]
+                }
+              ],
+              "quickReplies": []
+            }
+          }
+        },
+        {
+          "id": "20",
+          "type": "sendMessage",
+          "position": { "x": 500, "y": 0 },
+          "measured": { "width": 320, "height": 200 },
+          "data": {
+            "name": "Atendimento IA",
+            "isStartNode": false,
+            "details": {
+              "beforeStep": {
+                "id": "201",
+                "stepType": "chooseChannel",
+                "channel": "omnichannel"
+              },
+              "steps": [
+                {
+                  "id": "202",
+                  "stepType": "sendText",
+                  "text": "Pode me perguntar qualquer coisa sobre nossos produtos, prazos de entrega, garantias e formas de pagamento que irei te responder agora mesmo! 👇",
+                  "buttons": []
+                }
+              ],
+              "quickReplies": []
+            }
+          }
+        },
+        {
+          "id": "30",
+          "type": "sendMessage",
+          "position": { "x": 500, "y": 250 },
+          "measured": { "width": 320, "height": 200 },
+          "data": {
+            "name": "Apresentação Catálogo",
+            "isStartNode": false,
+            "details": {
+              "beforeStep": {
+                "id": "301",
+                "stepType": "chooseChannel",
+                "channel": "omnichannel"
+              },
+              "steps": [
+                {
+                  "id": "302",
+                  "stepType": "sendText",
+                  "text": "Aqui está nossa vitrine de produtos e serviços em destaque! Você pode comprar diretamente com aprovação instantânea no PIX ou Cartão:\n\n🌐 Acesse nosso catálogo digital para escolher o seu favorito.",
+                  "buttons": []
+                }
+              ],
+              "quickReplies": []
+            }
+          }
+        },
+        {
+          "id": "40",
+          "type": "sendMessage",
+          "position": { "x": 500, "y": 500 },
+          "measured": { "width": 320, "height": 200 },
+          "data": {
+            "name": "Transferir para Humano",
+            "isStartNode": false,
+            "details": {
+              "beforeStep": {
+                "id": "401",
+                "stepType": "chooseChannel",
+                "channel": "omnichannel"
+              },
+              "steps": [
+                {
+                  "id": "402",
+                  "stepType": "disableBot"
+                },
+                {
+                  "id": "403",
+                  "stepType": "sendText",
+                  "text": "Perfeito! Já notifiquei nossa equipe e pausei as respostas automáticas. 👤\n\nUm dos nossos consultores irá te responder aqui em alguns instantes. Por favor, já deixe sua mensagem ou dúvida!",
+                  "buttons": []
+                }
+              ],
+              "quickReplies": []
+            }
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "e_menu_to_ia",
+          "source": "10",
+          "sourceHandle": "111",
+          "target": "20",
+          "targetHandle": "20"
+        },
+        {
+          "id": "e_menu_to_catalogo",
+          "source": "10",
+          "sourceHandle": "121",
+          "target": "30",
+          "targetHandle": "30"
+        },
+        {
+          "id": "e_menu_to_humano",
+          "source": "10",
+          "sourceHandle": "131",
+          "target": "40",
+          "targetHandle": "40"
+        }
+      ]
+    }
+  ],
+  "customFields": {},
+  "botFields": {}
+}

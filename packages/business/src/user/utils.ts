@@ -6,9 +6,11 @@ import { platformAdminService } from "../platform-admin/service"
 export const isPlatformAdmin = async (
   user: Pick<UserModel, "id">,
 ): Promise<boolean> => {
-  if (isCloud()) {
+  if (isCloud() || process.env.WHITELABEL_UNLOCKED === "true") {
     const setting = await tenantService.findByOwner(user.id)
-    return Boolean(setting?.status === "active")
+    if (setting?.status === "active") {
+      return true
+    }
   }
   return await isSuperAdmin(user)
 }

@@ -1,0 +1,7 @@
+export * from "./types"
+export * from "./service"
+export * from "./parsers/kiwify"
+export * from "./parsers/hotmart"
+export * from "./parsers/eduzz"
+export * from "./parsers/monetizze"
+export * from "./parsers/generic-brazilian"

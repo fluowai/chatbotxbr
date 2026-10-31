@@ -10,6 +10,7 @@ import {
 } from "@chatbotx.io/ui/config/portal-nav"
 import {
   CircleHelpIcon,
+  GlobeIcon,
   Grid2x2PlusIcon,
   MailIcon,
   PaletteIcon,
@@ -63,6 +64,11 @@ export function PortalManageSidebar({ flags, pricing }: Props) {
       icon: RadioTowerIcon,
     },
     {
+      title: tManage("portalCustomDomain"),
+      url: "/manage/custom-domain",
+      icon: GlobeIcon,
+    },
+    {
       title: t("platformBranding.title"),
       url: "/manage/branding",
       icon: PaletteIcon,
@@ -90,7 +96,7 @@ export function PortalManageSidebar({ flags, pricing }: Props) {
   return (
     <PortalSideNav
       crossZoneSaas
-      customDomainHref={`${PORTAL_PREFIX}/custom-domain`}
+      customDomainHref="/manage/custom-domain"
       footer={<NavUser user={user} />}
       header={<BrandIcon alt="Brand" />}
       platformItems={platformItems}

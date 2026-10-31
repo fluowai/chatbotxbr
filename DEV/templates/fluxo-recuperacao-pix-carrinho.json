@@ -1,0 +1,140 @@
+{
+  "formatVersion": 2,
+  "exportedAt": "2026-10-29T12:00:00.000Z",
+  "source": {
+    "workspaceId": "1",
+    "flowId": "103",
+    "appVersion": "1.0.0"
+  },
+  "flows": [
+    {
+      "name": "[BR] Recuperação de Carrinho & PIX Abandonado",
+      "active": true,
+      "enableInInbox": true,
+      "startNodeId": "10",
+      "nodes": [
+        {
+          "id": "10",
+          "type": "sendMessage",
+          "position": { "x": 100, "y": 150 },
+          "measured": { "width": 320, "height": 220 },
+          "data": {
+            "name": "Mensagem de Recuperação",
+            "isStartNode": true,
+            "details": {
+              "beforeStep": {
+                "id": "101",
+                "stepType": "chooseChannel",
+                "channel": "omnichannel"
+              },
+              "steps": [
+                {
+                  "id": "102",
+                  "stepType": "sendText",
+                  "text": "Oi {{first_name}}! Tudo bem com você? 😊\n\nNotei que você separou alguns itens no carrinho e gerou o pedido, mas o pagamento ainda não foi concluído.\n\nAconteceu algum problema ou ficou com alguma dúvida sobre o produto ou a entrega?",
+                  "buttons": [
+                    {
+                      "id": "111",
+                      "label": "Concluir com Desconto",
+                      "buttonType": "sendMessage",
+                      "beforeStep": {
+                        "id": "112",
+                        "stepType": "startAnotherNode"
+                      },
+                      "steps": []
+                    },
+                    {
+                      "id": "121",
+                      "label": "Tive Dúvidas no Pedido",
+                      "buttonType": "sendMessage",
+                      "beforeStep": {
+                        "id": "122",
+                        "stepType": "startAnotherNode"
+                      },
+                      "steps": []
+                    }
+                  ]
+                }
+              ],
+              "quickReplies": []
+            }
+          }
+        },
+        {
+          "id": "20",
+          "type": "sendMessage",
+          "position": { "x": 520, "y": 50 },
+          "measured": { "width": 320, "height": 200 },
+          "data": {
+            "name": "Cupom Especial Liberado",
+            "isStartNode": false,
+            "details": {
+              "beforeStep": {
+                "id": "201",
+                "stepType": "chooseChannel",
+                "channel": "omnichannel"
+              },
+              "steps": [
+                {
+                  "id": "202",
+                  "stepType": "sendText",
+                  "text": "🎁 Que ótima notícia! Para te ajudar a fechar agora, liberei um cupom exclusivo de **10% de desconto extra**:\n\nCupom: `VOLTA10`\n\nCopie o código do cupom ou pague com chave PIX para garantir o envio imediato ainda hoje!",
+                  "buttons": []
+                }
+              ],
+              "quickReplies": []
+            }
+          }
+        },
+        {
+          "id": "30",
+          "type": "sendMessage",
+          "position": { "x": 520, "y": 280 },
+          "measured": { "width": 320, "height": 200 },
+          "data": {
+            "name": "Ajuda Humana",
+            "isStartNode": false,
+            "details": {
+              "beforeStep": {
+                "id": "301",
+                "stepType": "chooseChannel",
+                "channel": "omnichannel"
+              },
+              "steps": [
+                {
+                  "id": "302",
+                  "stepType": "disableBot"
+                },
+                {
+                  "id": "303",
+                  "stepType": "sendText",
+                  "text": "Entendido! Nossos especialistas estão a postos para esclarecer todas as suas dúvidas sobre prazos, tamanhos, garantia ou formas de pagamento.\n\nAguarde um instante que já vamos te responder por aqui!",
+                  "buttons": []
+                }
+              ],
+              "quickReplies": []
+            }
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "e_recup_desconto",
+          "source": "10",
+          "sourceHandle": "111",
+          "target": "20",
+          "targetHandle": "20"
+        },
+        {
+          "id": "e_recup_duvida",
+          "source": "10",
+          "sourceHandle": "121",
+          "target": "30",
+          "targetHandle": "30"
+        }
+      ]
+    }
+  ],
+  "customFields": {},
+  "botFields": {}
+}

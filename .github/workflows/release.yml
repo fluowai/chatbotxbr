@@ -81,6 +81,7 @@ jobs:
             ${{ env.DOCKER_REGISTRY }}/${{ steps.image_namespace.outputs.owner_lc }}/chatbotx-realtime
             ${{ env.DOCKER_REGISTRY }}/${{ steps.image_namespace.outputs.owner_lc }}/chatbotx-mcp
             ${{ env.DOCKER_REGISTRY }}/${{ steps.image_namespace.outputs.owner_lc }}/chatbotx-javascript-executor
+            ${{ env.DOCKER_REGISTRY }}/${{ steps.image_namespace.outputs.owner_lc }}/chatbotx-whatsmeow
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -148,6 +149,10 @@ jobs:
           - label: javascript-executor
             image: chatbotx-javascript-executor
             dockerfile: ./apps/javascript-executor/docker/Dockerfile
+            runner: ubuntu-latest
+          - label: whatsmeow
+            image: chatbotx-whatsmeow
+            dockerfile: ./apps/whatsmeow-bridge/Dockerfile
             runner: ubuntu-latest
     # Baseline builder leg was ~16 min and the others ~1-2 min. Bounds a hung
     # build, and an unprovisioned `runner` label, against the 24-hour default.
@@ -285,7 +290,8 @@ jobs:
               "Worker image (main): ${REGISTRY}/chatbotx-worker:main" \
               "Realtime image (main): ${REGISTRY}/chatbotx-realtime:main" \
               "MCP Server image (main): ${REGISTRY}/chatbotx-mcp:main" \
-              "JavaScript Executor image (main): ${REGISTRY}/chatbotx-javascript-executor:main"
+              "JavaScript Executor image (main): ${REGISTRY}/chatbotx-javascript-executor:main" \
+              "Whatsmeow image (main): ${REGISTRY}/chatbotx-whatsmeow:main"
           elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             printf '%s\n' \
               "Builder image (version): ${REGISTRY}/chatbotx-builder:${VERSION}" \
@@ -297,7 +303,9 @@ jobs:
               "MCP Server image (version): ${REGISTRY}/chatbotx-mcp:${VERSION}" \
               "MCP Server image (latest): ${REGISTRY}/chatbotx-mcp:latest" \
               "JavaScript Executor image (version): ${REGISTRY}/chatbotx-javascript-executor:${VERSION}" \
-              "JavaScript Executor image (latest): ${REGISTRY}/chatbotx-javascript-executor:latest"
+              "JavaScript Executor image (latest): ${REGISTRY}/chatbotx-javascript-executor:latest" \
+              "Whatsmeow image (version): ${REGISTRY}/chatbotx-whatsmeow:${VERSION}" \
+              "Whatsmeow image (latest): ${REGISTRY}/chatbotx-whatsmeow:latest"
           else
             echo "No publish tags for ref ${GITHUB_REF}."
           fi

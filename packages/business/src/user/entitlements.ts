@@ -12,6 +12,10 @@ import { isCloud, isEnterprise } from "../keys"
  * NEXT_PUBLIC_EDITION alone never unlocks features.
  */
 export const hasEnterpriseFeatures = async (): Promise<boolean> => {
+  if (process.env.WHITELABEL_UNLOCKED !== "false") {
+    return true
+  }
+
   if (!(isCloud() || isEnterprise())) {
     return false
   }

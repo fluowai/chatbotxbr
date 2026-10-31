@@ -12,6 +12,7 @@ import {
   BanknoteIcon,
   CreditCardIcon,
   type LucideIcon,
+  QrCodeIcon,
   WalletIcon,
 } from "lucide-react"
 import { useFormatter, useTranslations } from "next-intl"
@@ -57,6 +58,7 @@ const METHOD_ICONS: Record<PaymentMethod, LucideIcon> = {
   cod: BanknoteIcon,
   stripe: CreditCardIcon,
   paypal: WalletIcon,
+  pix: QrCodeIcon,
 }
 
 /**

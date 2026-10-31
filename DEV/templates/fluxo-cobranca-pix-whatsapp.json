@@ -1,0 +1,140 @@
+{
+  "formatVersion": 2,
+  "exportedAt": "2026-10-29T12:00:00.000Z",
+  "source": {
+    "workspaceId": "1",
+    "flowId": "102",
+    "appVersion": "1.0.0"
+  },
+  "flows": [
+    {
+      "name": "[BR] Cobrança e Geração de PIX - WhatsApp",
+      "active": true,
+      "enableInInbox": true,
+      "startNodeId": "10",
+      "nodes": [
+        {
+          "id": "10",
+          "type": "sendMessage",
+          "position": { "x": 100, "y": 150 },
+          "measured": { "width": 320, "height": 220 },
+          "data": {
+            "name": "Envio do PIX Copia e Cola",
+            "isStartNode": true,
+            "details": {
+              "beforeStep": {
+                "id": "101",
+                "stepType": "chooseChannel",
+                "channel": "omnichannel"
+              },
+              "steps": [
+                {
+                  "id": "102",
+                  "stepType": "sendText",
+                  "text": "🎉 Excelente escolha, {{first_name}}!\n\nSeu pedido foi registrado com sucesso. Aqui está sua chave de pagamento instantâneo via **PIX**:\n\n```\n00020126580014br.gov.bcb.pix0136123e4567-e89b-12d3-a456-426614174000520400005303986540549.905802BR5913SUA EMPRESA6009SAO PAULO62070503***6304E2CA\n```\n\n📌 **Como pagar:**\n1. Copie o código acima clicando ou pressionando sobre ele;\n2. Abra o app do seu banco ou internet banking;\n3. Selecione a opção **Pix Copia e Cola**;\n4. Cole o código e confirme o pagamento.\n\n⚡ A aprovação é imediata!",
+                  "buttons": [
+                    {
+                      "id": "111",
+                      "label": "Já Efetuei o Pagamento",
+                      "buttonType": "sendMessage",
+                      "beforeStep": {
+                        "id": "112",
+                        "stepType": "startAnotherNode"
+                      },
+                      "steps": []
+                    },
+                    {
+                      "id": "121",
+                      "label": "Dificuldade no PIX",
+                      "buttonType": "sendMessage",
+                      "beforeStep": {
+                        "id": "122",
+                        "stepType": "startAnotherNode"
+                      },
+                      "steps": []
+                    }
+                  ]
+                }
+              ],
+              "quickReplies": []
+            }
+          }
+        },
+        {
+          "id": "20",
+          "type": "sendMessage",
+          "position": { "x": 520, "y": 50 },
+          "measured": { "width": 320, "height": 180 },
+          "data": {
+            "name": "Agradecimento e Validação",
+            "isStartNode": false,
+            "details": {
+              "beforeStep": {
+                "id": "201",
+                "stepType": "chooseChannel",
+                "channel": "omnichannel"
+              },
+              "steps": [
+                {
+                  "id": "202",
+                  "stepType": "sendText",
+                  "text": "Muito obrigado! ✨\n\nNosso sistema bancário já está validando a compensação do seu PIX. Assim que recebermos a confirmação, você receberá a nota e os dados de envio/acesso aqui mesmo!",
+                  "buttons": []
+                }
+              ],
+              "quickReplies": []
+            }
+          }
+        },
+        {
+          "id": "30",
+          "type": "sendMessage",
+          "position": { "x": 520, "y": 280 },
+          "measured": { "width": 320, "height": 200 },
+          "data": {
+            "name": "Suporte ao Pagamento",
+            "isStartNode": false,
+            "details": {
+              "beforeStep": {
+                "id": "301",
+                "stepType": "chooseChannel",
+                "channel": "omnichannel"
+              },
+              "steps": [
+                {
+                  "id": "302",
+                  "stepType": "disableBot"
+                },
+                {
+                  "id": "303",
+                  "stepType": "sendText",
+                  "text": "Sem problemas! Estou transferindo seu atendimento para nossa equipe financeira agora mesmo. 💳\n\nPodemos emitir uma nova chave, parcelamento em cartão ou boleto. Aguarde um instante!",
+                  "buttons": []
+                }
+              ],
+              "quickReplies": []
+            }
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "e_pix_pago",
+          "source": "10",
+          "sourceHandle": "111",
+          "target": "20",
+          "targetHandle": "20"
+        },
+        {
+          "id": "e_pix_duvida",
+          "source": "10",
+          "sourceHandle": "121",
+          "target": "30",
+          "targetHandle": "30"
+        }
+      ]
+    }
+  ],
+  "customFields": {},
+  "botFields": {}
+}

@@ -1,0 +1,87 @@
+# WORKLOG - ChatbotX
+
+## 2026-10-29
+- **Análise Arquitetural para Marca Própria (White-Label) no Mercado Brasileiro**:
+  - Auditoria completa do repositório ChatbotX cobrindo multi-tenancy, branding, licenciamento enterprise, autenticação (better-auth + OAuth Broker), internacionalização e canais de comunicação.
+  - Mapeamento das amarras de código que impedem o uso livre de marca própria (checagem ed25519 em `hasEnterpriseFeatures`, injeção de `BRANDING_TITLE` "⚡ Built with chatbotx.io" em canais e webchats, fallbacks em `packages/business/src/platform/settings.ts`).
+  - Análise dos requisitos específicos do mercado brasileiro: WhatsApp Meta Cloud API vs QR Code (Evolution/Z-API), ecossistema de pagamentos PIX (Asaas/Mercado Pago), plataformas de infoprodutos e e-commerce (Kiwify, Hotmart, Nuvemshop), localização de idioma (`pt-BR`), máscaras de CPF/CNPJ e conformidade com LGPD.
+  - Documentação durável estruturada gerada em `DEV/ANALISE_MARCA_PROPRIA_BRASIL.md`.
+- **Execução da Fase 1: Desbloqueio e Identidade Base**:
+  - `packages/business/src/user/entitlements.ts`: Inserida validação de `process.env.WHITELABEL_UNLOCKED === "true"` para desbloquear recursos enterprise (custom branding, templates de e-mail, SMTP, audit logs) sem dependência de chave externa proprietária.
+  - `packages/business/src/enterprise/license/service.ts`: Liberado `hasFeature` sob `WHITELABEL_UNLOCKED`.
+  - `packages/business/src/platform/branding.ts`: Tornado `BRANDING_TITLE` configurável via `process.env.BRANDING_TITLE` ou `NEXT_PUBLIC_APP_NAME`, eliminando a imposição do link para chatbotx.io.
+  - `packages/business/src/platform/settings.ts`: Permitida personalização dos valores de fallback do nome do app, política de privacidade e termos via variáveis de ambiente.
+  - `apps/builder/src/i18n/config.ts`: Idioma padrão do sistema alterado de `"en"` para `"pt-BR"`.
+  - `packages/mail/src/emails/default-templates.ts` e `sign-up-credentials.ts`: Traduzidos assuntos e corpos de e-mail do sistema (verificação de conta, redefinição de senha, magic link e credenciais de acesso) para Português (Brasil).
+  - `.env.example`: Documentadas as novas variáveis de marca própria (`WHITELABEL_UNLOCKED`, `NEXT_PUBLIC_APP_NAME`, `BRANDING_TITLE`, `POLICY_URL`, `TERMS_OF_SERVICE_URL`) com `NEXT_PUBLIC_EDITION=enterprise`.
+- **Execução da Fase 2: Domínios Personalizados e Infraestrutura White-Label**:
+  - `packages/business/src/enterprise/custom-domain/service.ts`: Implementadas as operações de escrita e verificação de domínio (`upsertDomain`, `verifyDomain`, `removeDomain`) com tratamento de unicidade, normalização e invalidação de cache Redis.
+  - `packages/business/src/user-quota/service.ts`: `hasWhiteLabelEntitlement` agora concede a flag de white-label sob `WHITELABEL_UNLOCKED`.
+  - `packages/business/src/user/utils.ts`: `isPlatformAdmin` reconhece donos de tenants ativos em modo white-label.
+  - `apps/builder/src/app/manage/layout.tsx`: Permitido acesso ao painel `/manage` para donos de marca própria em modo self-hosted/enterprise, com auto-provisionamento de tenant caso ainda não exista.
+  - `apps/builder/src/enterprise/features/manage/components/portal-manage-sidebar.tsx`: Incluído o item "Domínio Personalizado" (`/manage/custom-domain`) no menu da plataforma e atualizado o link de `customDomainHref`.
+  - `apps/builder/src/enterprise/features/custom-domain/`: Criados schema de validação (`schema.ts`), server actions seguras (`custom-domain.action.ts`) e interface completa de gerenciamento (`custom-domain-settings.tsx`) com status em tempo real (Ativo/Pendente/Falha), instruções DNS (tipo CNAME, nome e destino) e botão de verificação.
+  - `apps/builder/src/app/manage/(enterprise)/custom-domain/page.tsx`: Criada a rota de página para os revendedores gerenciarem seu domínio próprio no painel.
+  - `apps/builder/messages/pt-BR.json`: Adicionadas traduções de `manageSidebar` para navegação totalmente em Português.
+  - `.env.example`: Documentadas as variáveis de rede e broker (`NEXT_PUBLIC_BUILDER_URL`, `NEXT_PUBLIC_BROKER_URL`).
+- **Execução da Fase 3: Tropicalização de Canais e Pagamentos (PIX, Asaas / Mercado Pago, E-commerce, WhatsApp)**:
+  - `packages/database/src/partials/ecommerce.ts`: Adicionado `"pix"` em `paymentMethods` e atualizados os valores padrão em `ECOMMERCE_SETTINGS_DEFAULTS` para `currency: "BRL"`, `currencySymbol: "R$"`, `currencyPosition: "leftSpace"`, `paymentMethods: ["pix", "cod"]` e país de envio padrão `"BR"`.
+  - `apps/builder/src/features/webshop/components/checkout-form.tsx` e `apps/builder/src/features/orders/components/order-payment-badge.tsx`: Adicionado ícone `QrCodeIcon` para o meio de pagamento PIX no checkout e na lista de pedidos.
+  - `apps/builder/messages/pt-BR.json` e `en.json`: Adicionadas as traduções para a opção de pagamento `"pix"` no checkout do webshop, nos pedidos e nas opções de configurações de e-commerce.
+  - `packages/utils/src/brazil.ts` e `packages/utils/src/index.ts`: Criado módulo utilitário brasileiro completo contendo validação matemática de dígitos verificadores de CPF e CNPJ (`validateCPF`, `validateCNPJ`, `validateDocumentBR`), formatação com máscaras (`formatCPF`, `formatCNPJ`, `formatDocumentBR`), normalização inteligente de telefone brasileiro para padrão E.164 (`normalizeBrazilianPhone` com injeção automática do 9º dígito móvel) e formatação monetária em Real (`formatCurrencyBRL`).
+  - `packages/business/src/pix/`: Criado subsistema unificado de pagamentos e cobranças PIX composto por:
+    - `pix-payload.ts`: Gerador de PIX Copia e Cola / QR Code Estático em conformidade com o padrão EMVCo do Banco Central do Brasil, cálculo de checksum CRC16-CCITT (polinômio 0x1021) e geração de URL para visualização do QR Code.
+    - `asaas.service.ts`: Cliente de integração com a API v3 do Asaas (criação/busca de clientes por CPF/CNPJ, emissão de cobranças PIX, captura de payload e QR Code em Base64 e consulta de status).
+    - `mercadopago.service.ts`: Cliente de integração com a API v1 do Mercado Pago (criação de pagamentos instantâneos PIX com idempotência, captura de `qr_code`, `qr_code_base64` e consulta de status).
+    - `service.ts` (`pixService`): Orquestrador que despacha para o melhor provedor configurado (Mercado Pago, Asaas ou fallback para PIX Estático).
+  - `packages/business/src/index.ts`: Exportado `pix` para consumo direto na aplicação.
+  - `.env.example`: Documentadas as variáveis de ambiente de pagamentos (`ASAAS_API_KEY`, `ASAAS_ENVIRONMENT`, `MERCADOPAGO_ACCESS_TOKEN`, `DEFAULT_PIX_KEY`, `DEFAULT_PIX_NAME`, `DEFAULT_PIX_CITY`).
+  - `DEV/templates/`: Criados 4 modelos de fluxo JSON prontos para importação direta no builder via `ImportFlowDialog`:
+    - `fluxo-atendimento-ia-whatsapp.json`: Triagem inteligente com IA, respostas a dúvidas frequentes, vitrine e transbordo para atendente humano.
+    - `fluxo-cobranca-pix-whatsapp.json`: Apresentação de resumo de pedido, código PIX Copia e Cola formatado em bloco copiável, instruções de pagamento e suporte financeiro.
+    - `fluxo-recuperacao-pix-carrinho.json`: Recuperação empática de carrinho/PIX abandonado com cupom de desconto de 10% (`VOLTA10`) e canal direto de dúvidas.
+    - `fluxo-webhook-kiwify-hotmart.json`: Automação pós-venda para Inbound Webhooks (`/api/hooks/{token}`) entregando dados de acesso ao curso/produto e convite para comunidade VIP.
+  - `DEV/MANUAL_TROPICALIZACAO_BRASIL.md`: Elaborado manual completo e prático para o operador e agências abordando moedas, gateways, configuração de webhooks da Kiwify/Hotmart, importação dos fluxos e conformidade com a LGPD.
+
+## 2026-10-30
+- **Desbloqueio Irrestrito de Recursos (Enterprise & White-Label)**:
+  - `packages/business/src/user/entitlements.ts`: `hasEnterpriseFeatures()` alterado para `process.env.WHITELABEL_UNLOCKED !== "false"`, garantindo que por padrão todos os recursos enterprise (branding, SMTP, audit logs, templates) permaneçam desbloqueados na edição brasileira.
+  - `packages/business/src/enterprise/license/service.ts`: `hasFeature` e `getLimit` liberam limites ilimitados (`undefined`) por padrão.
+  - `packages/business/src/user-quota/service.ts`: `hasWhiteLabelEntitlement` concede permissão de marca própria por padrão.
+- **Arquitetura de Níveis de Assinatura (SaaS Tiers Brasileiros)**:
+  - `packages/business/src/billing/tiers.ts`: Criado catálogo comercial com 5 níveis de assinatura:
+    - **Starter** (R$ 97/mês): 1 WhatsApp, 1 atendente, 1.500 contatos ativos.
+    - **Pro** (R$ 197/mês): 3 WhatsApps/Instagram, 3 atendentes, 10.000 contatos, webhooks de infoprodutos e PIX.
+    - **Scale** (R$ 397/mês): 10 WhatsApps, 10 atendentes, 50.000 contatos, Agentes de IA e CRM Kanban.
+    - **Agência White-Label** (R$ 697/mês): 50 WhatsApps, domínio próprio, subcontas e revenda.
+    - **Enterprise Ilimitado** (R$ 1.497/mês): Recursos sem restrições.
+  - Implementado `applyTierToUser(userId, tierId)` atualizando cotas no banco e invalidando cache Redis instantaneamente.
+- **Motor de Conectores de Infoproduto (Kiwify, Hotmart, Eduzz, Monetizze, Braip, Ticto, Kirvano)**:
+  - `packages/business/src/infoproducts/`: Criada camada de parsers dedicados com unificação para o padrão brasileiro:
+    - Normalização automática de telefone para padrão E.164 com injeção do 9º dígito móvel brasileiro (`normalizeBrazilianPhone`).
+    - Formatação e sanitização de CPF/CNPJ (`formatCPF`).
+    - Mapeamento universal de eventos: `compra_aprovada`, `pix_gerado`, `aguardando_pagamento`, `carrinho_abandonado`, `reembolsado`, `estorno`.
+  - `apps/builder/src/app/api/integrations/infoproducts/[platform]/[token]/route.ts`: Endpoint dedicado de recepção de webhooks em 1 clique (`/api/integrations/infoproducts/{platform}/{token}`) que enriquece os dados e despacha para o motor de fluxos.
+- **Integração de WhatsApp Não-Oficial com Whatsmeow (Golang)**:
+  - `apps/whatsmeow-bridge/`: Desenvolvido microserviço nativo em Go (Golang) com a biblioteca `go.mau.fi/whatsmeow`:
+    - REST API completa com endpoints para criar sessão (`/session/create`), gerar QR Code em base64 (`/session/qr`), verificar status (`/session/status`), envio de texto (`/message/send`) e logout (`/session/logout`).
+    - Webhook dispatcher que repassa eventos e mensagens recebidas para a plataforma.
+    - `Dockerfile` multi-stage leve baseado em Alpine Linux (~25MB).
+  - `packages/business/src/whatsmeow/service.ts`: Desenvolvido cliente TypeScript `WhatsmeowService` com tratamento de telefones brasileiros e reconexão.
+  - `apps/builder/src/app/api/whatsmeow/webhook/route.ts`: Criado endpoint no Next.js para ingestão de eventos e mensagens vindas do WhatsApp via Whatsmeow.
+  - `docker-compose.yml`: Adicionado serviço `whatsmeow-bridge` conectado à rede e volumes persistentes do ChatbotX.
+- **Localização 100% Português (Brasil)**:
+  - Tradução dos termos restantes em `apps/builder/messages/pt-BR.json` e inclusão de chaves para infoprodutos, whatsmeow e tiers de assinatura.
+  - Sincronização de paridade de chaves em `en.json`.
+  - Atualização do arquivo `.env.example` com as variáveis de Whatsmeow e White-label.
+
+## 2026-10-31
+- **Análise Operacional de Produção e Arquitetura de Deploy**:
+  - Auditoria completa dos 5 serviços de aplicação (`builder`, `worker`, `realtime`, `javascript-executor`, `whatsmeow-bridge`) e 4 serviços de infraestrutura (`postgres` com pgvector/TimescaleDB, `redis` com persistência AOF, `filesystem` RustFS/S3 e SMTP).
+  - Identificação e resolução de gaps para operação em produção:
+    - Criação do `docker-compose.prod.yml` isolando portas no localhost (127.0.0.1), segregando rede interna restrita para o sandbox `javascript-executor` e configurando modo `standalone` para o worker BullMQ.
+    - Análise do roteamento do proxy reverso de borda (Nginx/Caddy): em modo `production`, o Next.js não faz proxy de `/ws/*` e `/storage/*`, necessitando que o proxy reverso encaminhe os WebSockets para `realtime:1999` e as mídias para `filesystem:9000`.
+    - Elaboração de templates completos de configuração Nginx e Caddy com SSL, buffers e suporte a uploads de 25MB.
+    - Revisão e aprimoramento de `scripts/deployment/upgrade.sh` com suporte a migrações idempotentes e rollout sem queda de bancos.
+    - Elaboração do manual durável `DEV/GUIA_OPERACAO_PRODUCAO.md` cobrindo dimensionamento de servidor, checklist de segurança `.env`, procedimentos de bootstrap de usuário master e rotinas de backup/DR.
+

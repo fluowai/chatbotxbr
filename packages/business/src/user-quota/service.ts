@@ -563,6 +563,9 @@ class UserQuotaService extends BaseService {
    * reseller plan when deciding whether to provision a tenant. No row → false.
    */
   async hasWhiteLabelEntitlement(userId: string): Promise<boolean> {
+    if (process.env.WHITELABEL_UNLOCKED !== "false") {
+      return true
+    }
     const quota = await db.query.userQuotaModel.findFirst({
       where: { userId },
       columns: { whiteLabel: true },

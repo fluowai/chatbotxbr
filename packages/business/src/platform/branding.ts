@@ -5,7 +5,11 @@ import type { ChannelType } from "@chatbotx.io/database/partials"
  * a single source of truth so the builder UI, the integration settings actions,
  * and the worker all agree on the same string.
  */
-export const BRANDING_TITLE = "⚡ Built with chatbotx.io"
+export const BRANDING_TITLE =
+  process.env.BRANDING_TITLE ??
+  (process.env.NEXT_PUBLIC_APP_NAME
+    ? `⚡ ${process.env.NEXT_PUBLIC_APP_NAME}`
+    : "⚡ Built with chatbotx.io")
 
 /**
  * Build the canonical branding URL for a channel's persistent menu. Pure — the

@@ -8,7 +8,7 @@ import type { PortalSaasFlags } from "@chatbotx.io/ui/config/portal-nav"
 import { buildResellerPricingUrl } from "@chatbotx.io/ui/lib/portal-pricing-url"
 import { notFound } from "next/navigation"
 import { PortalManageSidebar } from "@/enterprise/features/manage/components/portal-manage-sidebar"
-import { isCloud } from "@/env"
+import { isCloud, isEnterprise } from "@/env"
 import { ManageLayout } from "@/features/manage/manage-layout"
 import { enforcePasswordCurrent } from "@/lib/auth/require-password-current"
 import { getCurrentUser } from "@/lib/auth/utils"
@@ -36,22 +36,37 @@ export default async function ManageLayoutPage({
   enforcePasswordCurrent(user)
 
   /**
-   * Cloud edition: only the active tenant owner (reseller) may access manage,
+   * Only the active tenant owner (reseller) may access manage,
    * and they get the reseller `PortalManageSidebar`.
    */
-  if (!isCloud()) {
+  if (
+    !(
+      isCloud() ||
+      isEnterprise() ||
+      process.env.WHITELABEL_UNLOCKED === "true"
+    )
+  ) {
     return notFound()
   }
 
-  const tenant = await tenantService.findByOwner(user.id)
+  let tenant = await tenantService.findByOwner(user.id)
+  if (
+    !tenant &&
+    (isEnterprise() || process.env.WHITELABEL_UNLOCKED === "true")
+  ) {
+    await tenantService.provisionForOwner(user.id)
+    tenant = await tenantService.findByOwner(user.id)
+  }
+
   if (tenant?.status !== "active") {
     return notFound()
   }
 
   const quota = await userQuotaService.getForUser(user.id)
+  const isWhitelabelUnlocked = process.env.WHITELABEL_UNLOCKED === "true"
   const flags: PortalSaasFlags = {
-    saasMode: quota?.saasMode ?? false,
-    whiteLabel: quota?.whiteLabel ?? false,
+    saasMode: quota?.saasMode ?? isWhitelabelUnlocked,
+    whiteLabel: quota?.whiteLabel ?? isWhitelabelUnlocked,
   }
   // Pricing lives on the reseller's custom domain — only white-label resellers
   // have one, so resolve it only then (mirrors the enterprise portal sidebar).

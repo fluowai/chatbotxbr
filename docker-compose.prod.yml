@@ -1,0 +1,220 @@
+name: chatbotx-prod
+
+x-service-common: &service-common
+  restart: always
+  env_file:
+    - .env
+  networks:
+    - chatbotx-network
+
+services:
+  # ─────────────────────────────────────────────
+  # Banco de Dados Principal (PostgreSQL + pgvector + TimescaleDB)
+  # ─────────────────────────────────────────────
+  postgres:
+    <<: *service-common
+    image: timescale/timescaledb-ha:pg18-all
+    ports:
+      - "127.0.0.1:5432:5432" # Bloqueado para acesso externo (apenas localhost/docker)
+    volumes:
+      - db-data:/home/postgres/pgdata
+    command: ["postgres", "-c", "log_statement=${POSTGRES_LOG_STATEMENT:-none}", "-c", "max_connections=200"]
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-chatbotx}
+      - POSTGRES_USER=${POSTGRES_USER:-chatbotx}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-secretkey}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ─────────────────────────────────────────────
+  # Cache, Filas BullMQ e Streams (Redis com persistência AOF)
+  # ─────────────────────────────────────────────
+  redis:
+    <<: *service-common
+    image: redis:8-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "2gb", "--maxmemory-policy", "noeviction"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - cache-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  # Armazenamento de Arquivos / S3 (RustFS)
+  # ─────────────────────────────────────────────
+  filesystem:
+    <<: *service-common
+    image: rustfs/rustfs:latest
+    command: server /data
+    ports:
+      - "127.0.0.1:9000:9000"
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY_ID:-chatbotx}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_ACCESS_KEY:-secretkey}
+      RUSTFS_API_CORS_ALLOW_ORIGIN: ${RUSTFS_API_CORS_ALLOW_ORIGIN:-*}
+    volumes:
+      - filesystem-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  filesystem-init:
+    <<: *service-common
+    image: rustfs/rc:latest
+    depends_on:
+      filesystem:
+        condition: service_healthy
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY_ID:-chatbotx}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_ACCESS_KEY:-secretkey}
+    entrypoint: >
+      /bin/sh -c "rc alias set local http://filesystem:9000
+      $${RUSTFS_ACCESS_KEY} $${RUSTFS_SECRET_KEY}; rc mb local/chatbotx
+      --ignore-existing; touch /tmp/empty && rc cp /tmp/empty
+      local/chatbotx/public/; rc anonymous set public local/chatbotx/public;"
+
+  # ─────────────────────────────────────────────
+  # Sandbox de Execução de Código Javascript (Isolado e Seguro)
+  # ─────────────────────────────────────────────
+  javascript-executor:
+    restart: always
+    build:
+      context: .
+      dockerfile: apps/javascript-executor/docker/Dockerfile
+    environment:
+      JAVASCRIPT_EXECUTOR_TOKEN: ${JAVASCRIPT_EXECUTOR_TOKEN}
+      MAX_CONCURRENCY: ${MAX_CONCURRENCY:-4}
+    networks:
+      - internal-executor-network
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid,nodev
+    pids_limit: 128
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 512M
+          pids: 128
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3210/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ─────────────────────────────────────────────
+  # Aplicação Web Principal (Builder Next.js)
+  # ─────────────────────────────────────────────
+  builder:
+    <<: *service-common
+    build:
+      context: .
+      dockerfile: apps/builder/docker/Dockerfile
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      filesystem:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    environment:
+      - NODE_ENV=production
+      - RUN_DB_MIGRATE=false # Rodado em etapa controlada de deploy/migração
+      - RUN_DB_SEED=false
+
+  # ─────────────────────────────────────────────
+  # Motor de Filas e Tarefas em Background (BullMQ Worker)
+  # ─────────────────────────────────────────────
+  worker:
+    <<: *service-common
+    build:
+      context: .
+      dockerfile: apps/worker/docker/Dockerfile
+    networks:
+      - chatbotx-network
+      - internal-executor-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      filesystem:
+        condition: service_healthy
+      javascript-executor:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      - JAVASCRIPT_EXECUTOR_URL=http://javascript-executor:3210
+      - DATABASE_POOL_MAX=80
+    command: ["worker", "standalone"]
+
+  # ─────────────────────────────────────────────
+  # Gateway WebSocket de Alta Performance (uWebSockets.js)
+  # ─────────────────────────────────────────────
+  realtime:
+    <<: *service-common
+    build:
+      context: .
+      dockerfile: apps/realtime/docker/Dockerfile
+    ports:
+      - "127.0.0.1:1999:1999"
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+      - REALTIME_BUILDER_URL=http://builder:3000
+
+  # ─────────────────────────────────────────────
+  # Microserviço WhatsApp QR Code (Whatsmeow Go Bridge)
+  # ─────────────────────────────────────────────
+  whatsmeow-bridge:
+    <<: *service-common
+    build:
+      context: ./apps/whatsmeow-bridge
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8089:8089"
+    environment:
+      - PORT=8089
+      - WEBHOOK_URL=http://builder:3000/api/whatsmeow/webhook
+      - WHATSMEOW_SECRET=${WHATSMEOW_SECRET}
+      - DATA_PATH=/app/data
+    volumes:
+      - whatsmeow-data:/app/data
+
+networks:
+  chatbotx-network:
+    driver: bridge
+  internal-executor-network:
+    driver: bridge
+    internal: true
+
+volumes:
+  db-data:
+  cache-data:
+  filesystem-data:
+  whatsmeow-data:

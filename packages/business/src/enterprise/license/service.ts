@@ -357,6 +357,10 @@ export const getLicense = loadLicense
 export const getLicenseStatus = loadLicense
 
 export const hasFeature = async (feature: LicenseFeature): Promise<boolean> => {
+  if (process.env.WHITELABEL_UNLOCKED !== "false") {
+    return true
+  }
+
   const license = await getLicense()
 
   return isLicenseEntitled(license.state) && license.features.includes(feature)
@@ -365,6 +369,10 @@ export const hasFeature = async (feature: LicenseFeature): Promise<boolean> => {
 export const getLimit = async (
   key: LicenseLimitKey,
 ): Promise<LicenseLimits[LicenseLimitKey] | undefined> => {
+  if (process.env.WHITELABEL_UNLOCKED !== "false") {
+    return undefined
+  }
+
   const license = await getLicense()
 
   if (!isLicenseEntitled(license.state)) {

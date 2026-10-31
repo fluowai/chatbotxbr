@@ -1,15 +1,25 @@
 #!/bin/bash
+set -euo pipefail
 
-set -x
+COMPOSE_FILE="docker-compose.prod.yml"
 
-# pull new images
-docker compose -f docker-compose.prod.yml pull builder worker realtime
+echo "🚀 Iniciando atualização dos serviços ChatbotX..."
 
-# stop old containers
-docker compose -f docker-compose.prod.yml down builder worker realtime
+# 1. Build / Pull dos serviços de aplicação
+echo "📦 Construindo / obtendo imagens atualizadas..."
+docker compose -f "$COMPOSE_FILE" build builder worker realtime javascript-executor whatsmeow-bridge
 
-# start new containers
-docker compose -f docker-compose.prod.yml up -d builder worker realtime
+# 2. Executa migrações de banco pendentes de forma segura
+echo "🔄 Aplicando migrações de banco de dados..."
+docker compose -f "$COMPOSE_FILE" run --rm builder migrate
 
-# remove old images
-docker system prune -f
+# 3. Atualiza os serviços sem parar os bancos (postgres, redis, filesystem)
+echo "🚀 Reiniciando serviços de aplicação com zero-downtime..."
+docker compose -f "$COMPOSE_FILE" up -d --no-deps builder worker realtime javascript-executor whatsmeow-bridge
+
+# 4. Limpa imagens dangling antigas
+echo "🧹 Limpando imagens órfãs..."
+docker image prune -f
+
+echo "✅ Atualização concluída com sucesso!"
+

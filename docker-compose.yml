@@ -107,6 +107,21 @@ services:
     volumes:
       - redis-ui-data:/data
 
+  whatsmeow-bridge:
+    <<: *network
+    build:
+      context: ./apps/whatsmeow-bridge
+      dockerfile: Dockerfile
+    ports:
+      - "8089:8089"
+    environment:
+      - PORT=8089
+      - WEBHOOK_URL=${WHATSMEOW_WEBHOOK_URL:-http://host.docker.internal:3123/api/whatsmeow/webhook}
+      - WHATSMEOW_SECRET=${WHATSMEOW_SECRET:-}
+      - DATA_PATH=/app/data
+    volumes:
+      - whatsmeow-data:/app/data
+
 networks:
   chatbotx-network:
     driver: bridge
@@ -116,3 +131,4 @@ volumes:
   filesystem-data:
   cache-data:
   redis-ui-data:
+  whatsmeow-data:

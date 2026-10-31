@@ -7007,7 +7007,8 @@
     "paymentMethods": {
       "cod": "Pagamento na entrega",
       "stripe": "Cartão",
-      "paypal": "PayPal"
+      "paypal": "PayPal",
+      "pix": "PIX"
     },
     "shippingTypes": {
       "delivery": "Entregar ao cliente",
@@ -9891,7 +9892,8 @@
         "options": {
           "cod": "Pagamento na entrega",
           "stripe": "Cartão",
-          "paypal": "PayPal"
+          "paypal": "PayPal",
+          "pix": "PIX"
         },
         "connectHint": "Para oferecer {provider}, conecte-o em <link>Configurações → Integrações</link>."
       },
@@ -10114,6 +10116,7 @@
       "cod": "Pagamento na entrega",
       "stripe": "Cartão",
       "paypal": "PayPal",
+      "pix": "PIX (Aprovação Imediata)",
       "paid": "Pago",
       "refunded": "Reembolsado",
       "awaiting": "Aguardando o seu pagamento",
@@ -10789,12 +10792,59 @@
     }
   },
   "oauthConsent": {
-    "title": "Authorize {clientName}",
-    "description": "This application is requesting access to your workspace.",
-    "permissionsTitle": "Requested permissions",
-    "signedInAs": "Signed in as",
-    "approve": "Approve",
-    "deny": "Deny",
+    "title": "Autorizar {clientName}",
+    "description": "Este aplicativo está solicitando acesso ao seu espaço de trabalho.",
+    "permissionsTitle": "Permissões solicitadas",
+    "signedInAs": "Conectado como",
+    "approve": "Aprovar",
+    "deny": "Recusar",
     "failed": "Não foi possível concluir a autorização. Tente novamente."
+  },
+  "manageSidebar": {
+    "communityGroup": "Comunidade",
+    "enterpriseGroup": "Enterprise",
+    "platformGroup": "Plataforma",
+    "toolsGroup": "Ferramentas",
+    "saasGroup": "SaaS",
+    "portalUsers": "Subcontas",
+    "portalWorkspaces": "Espaços de Trabalho",
+    "portalPlans": "Planos",
+    "portalTopUpPacks": "Pacotes de Recarga",
+    "portalUsage": "Consumo",
+    "portalCustomDomain": "Domínio Personalizado",
+    "portalPaymentProcessor": "Processador de Pagamento",
+    "portalSmtp": "Configurações de SMTP",
+    "portalPricingPage": "Planos e Preços"
+  },
+  "infoproducts": {
+    "title": "Integrações de Infoprodutos",
+    "description": "Conectores automáticos em 1 clique para Kiwify, Hotmart, Eduzz, Monetizze, Braip e Ticto.",
+    "events": {
+      "compra_aprovada": "Compra Aprovada",
+      "pix_gerado": "PIX Gerado",
+      "aguardando_pagamento": "Aguardando Pagamento",
+      "carrinho_abandonado": "Carrinho Abandonado",
+      "reembolsado": "Reembolsado",
+      "estorno": "Chargeback / Estorno",
+      "cancelado": "Cancelado"
+    }
+  },
+  "whatsmeow": {
+    "title": "WhatsApp Conexão Direta (QR Code)",
+    "description": "Conecte qualquer número de WhatsApp em segundos escaneando o QR Code, sem pagar taxas por mensagem da Meta.",
+    "scanQr": "Escanear QR Code",
+    "status": {
+      "connected": "Conectado",
+      "connecting": "Conectando...",
+      "qr_ready": "Aguardando Leitura do QR Code",
+      "disconnected": "Desconectado"
+    }
+  },
+  "tiers": {
+    "starter": "Starter (Iniciante)",
+    "pro": "Pro (Infoprodutor & PME)",
+    "scale": "Scale (Lançamentos & E-commerce)",
+    "agency": "Agência White-Label",
+    "enterprise": "Enterprise Ilimitado"
   }
 }

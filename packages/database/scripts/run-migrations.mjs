@@ -70,7 +70,36 @@ const CONCURRENTLY_RE = /\bCONCURRENTLY\b/i
 
 const isNonTransactional = (statement) => CONCURRENTLY_RE.test(statement)
 
-const runMigrationsSequentially = async (db) => {
+const isTimescaleStatement = (stmt) => {
+  if (/CREATE\s+MATERIALIZED\s+VIEW/i.test(stmt)) {
+    return false
+  }
+  const codeWithoutComments = stmt
+    .replace(/--.*$/gm, "")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .trim()
+
+  return (
+    /\b(create_hypertable|add_compression_policy|add_retention_policy|add_continuous_aggregate_policy)\s*\(/i.test(
+      codeWithoutComments,
+    ) ||
+    /CREATE\s+EXTENSION\s+(IF\s+NOT\s+EXISTS\s+)?timescaledb/i.test(
+      codeWithoutComments,
+    ) ||
+    /ALTER\s+(TABLE|MATERIALIZED\s+VIEW)[\s\S]*?\bSET\s*\(\s*timescaledb\./i.test(
+      codeWithoutComments,
+    )
+  )
+}
+
+const sanitizeStatementForStandardPg = (stmt) => {
+  if (/WITH\s*\(\s*timescaledb\.continuous\s*\)/i.test(stmt)) {
+    return stmt.replace(/WITH\s*\(\s*timescaledb\.continuous\s*\)/i, "")
+  }
+  return stmt
+}
+
+const runMigrationsSequentially = async (db, isTimescaleAvailable = true) => {
   const migrationsTable = "__drizzle_migrations"
   const migrationsSchema = "drizzle"
 
@@ -115,6 +144,31 @@ const runMigrationsSequentially = async (db) => {
         values(${migration.hash}, ${migration.folderMillis}, ${migration.name ?? null})
       `)
 
+    const executeStatements = async (executor) => {
+      for (let stmt of statements) {
+        if (!isTimescaleAvailable) {
+          if (isTimescaleStatement(stmt)) {
+            continue
+          }
+          stmt = sanitizeStatementForStandardPg(stmt)
+        }
+
+        try {
+          await executor.execute(sql.raw(stmt))
+        } catch (err) {
+          console.error(
+            "FAILED STATEMENT:\n",
+            stmt,
+            "\nERROR MESSAGE:\n",
+            err.message,
+            "\nCAUSE:\n",
+            err.cause,
+          )
+          throw err
+        }
+      }
+    }
+
     if (statements.some(isNonTransactional)) {
       // `CREATE INDEX CONCURRENTLY` (and friends) cannot run inside a
       // transaction block, so the whole migration runs unwrapped. It is
@@ -123,16 +177,11 @@ const runMigrationsSequentially = async (db) => {
       // in such a migration must be individually re-runnable — use
       // `IF NOT EXISTS`. Note a failed CONCURRENTLY build leaves an INVALID
       // index that `IF NOT EXISTS` will then skip; drop it before re-running.
-      for (const stmt of statements) {
-        await db.execute(sql.raw(stmt))
-      }
+      await executeStatements(db)
       await recordMigration(db)
     } else {
       await db.transaction(async (tx) => {
-        for (const stmt of statements) {
-          await tx.execute(sql.raw(stmt))
-        }
-
+        await executeStatements(tx)
         await recordMigration(tx)
       })
     }
@@ -331,6 +380,33 @@ try {
   ])
   migrationLockAcquired = true
 
+  let isTimescaleAvailable = false
+  try {
+    const tsCheck = await client.query(
+      "SELECT 1 FROM pg_available_extensions WHERE name = 'timescaledb'",
+    )
+    isTimescaleAvailable = tsCheck.rows.length > 0
+  } catch {
+    isTimescaleAvailable = false
+  }
+
+  if (!isTimescaleAvailable) {
+    console.log(
+      "Notice: TimescaleDB extension is not available on this PostgreSQL server (e.g. Supabase). Applying standard PostgreSQL compatibility fallbacks.",
+    )
+    await client.query(`
+      CREATE OR REPLACE FUNCTION time_bucket(bucket_width interval, ts timestamptz)
+      RETURNS timestamptz AS $$
+        SELECT date_bin(bucket_width, ts, TIMESTAMPTZ '2001-01-01');
+      $$ LANGUAGE sql IMMUTABLE;
+
+      CREATE OR REPLACE FUNCTION time_bucket(bucket_width text, ts timestamptz)
+      RETURNS timestamptz AS $$
+        SELECT date_bin(bucket_width::interval, ts, TIMESTAMPTZ '2001-01-01');
+      $$ LANGUAGE sql IMMUTABLE;
+    `)
+  }
+
   await reconcileRenamedMigrations(client)
   await reconcileSquashedQuestionnaireMigration(client)
   const db = drizzle({ client })
@@ -339,13 +415,13 @@ try {
   // path that can unwrap a migration, so it wins over the opt-out.
   const hasNonTransactionalMigration =
     await hasPendingNonTransactionalMigration(client)
-  if (useSequentialMigrations || hasNonTransactionalMigration) {
-    if (!useSequentialMigrations) {
+  if (useSequentialMigrations || hasNonTransactionalMigration || !isTimescaleAvailable) {
+    if (!useSequentialMigrations && !isTimescaleAvailable) {
       console.log(
-        "DATABASE_MIGRATIONS_SEQUENTIAL=false ignored: a pending migration cannot run inside a transaction.",
+        "DATABASE_MIGRATIONS_SEQUENTIAL=false overridden: standard PostgreSQL fallback runner active.",
       )
     }
-    await runMigrationsSequentially(db)
+    await runMigrationsSequentially(db, isTimescaleAvailable)
   } else {
     await migrate(db, { migrationsFolder })
   }

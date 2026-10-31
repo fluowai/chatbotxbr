@@ -21,7 +21,7 @@ export type OrderSource = z.infer<typeof orderSources>
  * `cod` is cash on delivery; `stripe` and `paypal` are paid online on the
  * provider's own page, with the store's own connected account.
  */
-export const paymentMethods = z.enum(["cod", "stripe", "paypal"])
+export const paymentMethods = z.enum(["cod", "stripe", "paypal", "pix"])
 export type PaymentMethod = z.infer<typeof paymentMethods>
 
 /** The payment methods paid online, each through its own provider. */
@@ -449,17 +449,17 @@ export const ECOMMERCE_SETTINGS_DEFAULTS: EcommerceSettings = {
     notifyOnCartStatusChange: true,
   },
   payments: {
-    paymentMethods: ["cod"],
-    currency: "USD",
-    currencyPosition: "left",
-    currencySymbol: "$",
+    paymentMethods: ["pix", "cod"],
+    currency: "BRL",
+    currencyPosition: "leftSpace",
+    currencySymbol: "R$",
     serviceFeePercent: 0,
   },
   shipping: {
     shippingType: "delivery",
     storeAddress: null,
-    shippingCountries: [],
-    defaultShippingCountry: null,
+    shippingCountries: ["BR"],
+    defaultShippingCountry: "BR",
     deliveryCost: 0,
   },
   checkout: {
