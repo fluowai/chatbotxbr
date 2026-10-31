@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"image/png"
 	"log"
 	"net/http"
 	"os"
@@ -15,12 +14,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/boombuler/barcode"
-	"github.com/boombuler/barcode/qr"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/skip2/go-qrcode"
 	"go.mau.fi/whatsmeow"
-	waProto "go.mau.fi/whatsmeow/binary/proto"
+	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
@@ -66,7 +63,7 @@ func main() {
 
 	dbLog := waLog.Stdout("Database", "INFO", true)
 	var err error
-	container, err = sqlstore.New("sqlite3", fmt.Sprintf("file:%s/whatsmeow.db?_foreign_keys=on", dbPath), dbLog)
+	container, err = sqlstore.New(context.Background(), "sqlite3", fmt.Sprintf("file:%s/whatsmeow.db?_foreign_keys=on", dbPath), dbLog)
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
@@ -150,7 +147,7 @@ func handleCreateSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deviceStore, err := container.GetFirstDevice()
+	deviceStore, err := container.GetFirstDevice(context.Background())
 	if err != nil {
 		sessionsLock.Unlock()
 		http.Error(w, fmt.Sprintf(`{"error":"failed to get device: %v"}`, err), http.StatusInternalServerError)
@@ -307,7 +304,7 @@ func handleSendMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	recipientJID := types.NewJID(req.To, types.DefaultUserServer)
-	msg := &waProto.Message{
+	msg := &waE2E.Message{
 		Conversation: proto.String(req.Text),
 	}
 

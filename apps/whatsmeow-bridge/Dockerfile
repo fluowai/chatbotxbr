@@ -8,6 +8,7 @@ COPY go.mod go.sum* ./
 RUN go mod download || true
 
 COPY . .
+RUN go mod tidy
 RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-w -s" -o whatsmeow-bridge main.go
 
 FROM alpine:3.19
