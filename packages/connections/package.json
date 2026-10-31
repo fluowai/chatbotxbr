@@ -41,7 +41,7 @@
     "@chatbotx.io/typescript-config": "workspace:*",
     "@chatbotx.io/vitest-config": "workspace:*",
     "@types/node": "^24.10.4",
-    "dotenv-cli": "^11.0.0",
+    "dotenv-cli": "^11.1.0",
     "typescript": "^5",
     "vitest": "^4.1.0"
   },
