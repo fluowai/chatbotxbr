@@ -16,17 +16,17 @@
     "@chatbotx.io/realtime-protocol": "workspace:*",
     "@chatbotx.io/redis": "workspace:*",
     "@t3-oss/env-core": "^0.13.11",
-    "ky": "^2.0.2",
-    "tsx": "^4.23.0",
+    "ky": "^2.2.0",
+    "tsx": "^4.23.15",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.70.0",
-    "zod": "^4.3.6"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@chatbotx.io/typescript-config": "workspace:*",
     "@chatbotx.io/vitest-config": "workspace:*",
     "@types/node": "24.x",
     "dotenv-cli": "^11.0.0",
-    "jose": "^6.2.3",
+    "jose": "^6.2.18",
     "vitest": "^4.1.0"
   }
 }
