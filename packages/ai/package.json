@@ -10,11 +10,11 @@
     "./utils": "./src/utils/index.ts"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^4.0.82",
-    "@ai-sdk/deepseek": "^3.0.67",
-    "@ai-sdk/google": "^4.0.99",
-    "@ai-sdk/openai": "^4.0.96",
-    "@ai-sdk/openai-compatible": "^3.0.71",
+    "@ai-sdk/anthropic": "^4.0.106",
+    "@ai-sdk/deepseek": "^3.0.88",
+    "@ai-sdk/google": "^4.0.122",
+    "@ai-sdk/openai": "^4.0.121",
+    "@ai-sdk/openai-compatible": "^3.0.93",
     "@chatbotx.io/business": "workspace:*",
     "@chatbotx.io/database": "workspace:*",
     "@chatbotx.io/flow-config": "workspace:*",
@@ -24,11 +24,11 @@
     "@chatbotx.io/worker-config": "workspace:*",
     "@openrouter/ai-sdk-provider": "^3.1.0",
     "@t3-oss/env-core": "^0.13.11",
-    "ai": "^7.0.143",
-    "ky": "^2.0.2",
+    "ai": "^7.0.177",
+    "ky": "^2.2.0",
     "mime-types": "^3.0.2",
     "universal-error-normalizer": "^1.0.0",
-    "zod": "^4.3.6"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@chatbotx.io/typescript-config": "workspace:*",
