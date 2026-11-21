@@ -22,7 +22,7 @@
   "dependencies": {
     "@vitejs/plugin-react": "^4.7.0",
     "@vitest/coverage-v8": "^4.1.8",
-    "jsdom": "^25.0.1",
+    "jsdom": "^31.0.1",
     "msw": "^2.7.3",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^4.1.8"
